@@ -1,0 +1,28 @@
+{
+  "name": "com.yans.panels",
+  "version": "1.0.0",
+  "displayName": "Yans Panels",
+  "description": "A Unity package for managing UI screens like panels and popups. It provides a system for screen lifecycle management, transitions, orientation handling, and ViewModel integration. Screens can be instantiated from prefabs and safe area adjustments are supported for panels.",
+  "unity": "2021.3",
+  "documentationUrl": "https://github.com/Yansubaev/Yans.Panels/README.md",
+  "changelogUrl": "https://github.com/Yansubaev/Yans.Panels/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Yansubaev/Yans.Panels/blob/main/LICENSE",
+  "dependencies": {
+    "com.cysharp.unitask": "2.5.10"
+  },
+  "keywords": [
+    "ui",
+    "panel",
+    "popup",
+    "screen management",
+    "unity",
+    "transition",
+    "viewmodel",
+    "navigation"
+  ],
+  "author": {
+    "name": "Denis Iansubaev",
+    "email": "iansubd@gmail.com",
+    "url": "https://github.com/Yansubaev"
+  }
+}
