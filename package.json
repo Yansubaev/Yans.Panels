@@ -1,6 +1,6 @@
 {
   "name": "com.yans.panels",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "displayName": "Yans Panels",
   "description": "A Unity package for managing UI screens like panels and popups. It provides a system for screen lifecycle management, transitions, orientation handling, and ViewModel integration. Screens can be instantiated from prefabs and safe area adjustments are supported for panels.",
   "unity": "2021.3",

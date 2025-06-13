@@ -7,7 +7,7 @@ namespace Yans.ViewModels
     {
         private Dictionary<string, List<ViewModel>> _viewModels = new();
 
-        public VM Get<VM>(IViewModelOwner lifecycleOwner) where VM : ViewModel
+        public T Get<T>(IViewModelOwner lifecycleOwner) where T : ViewModel
         {
             string instanceId = lifecycleOwner.GetInstanceId();
             if (!_viewModels.TryGetValue(instanceId, out var viewModels))
@@ -18,13 +18,13 @@ namespace Yans.ViewModels
 
             foreach (var vm in viewModels)
             {
-                if (vm is VM typedVm)
+                if (vm is T typedVm)
                 {
                     return typedVm;
                 }
             }
 
-            var newViewModel = System.Activator.CreateInstance<VM>();
+            var newViewModel = CreateViewModelInstance<T>();
             newViewModel.Create();
             viewModels.Add(newViewModel);
             return newViewModel;
@@ -41,6 +41,11 @@ namespace Yans.ViewModels
                 }
                 viewModels.Clear();
             }
+        }
+
+        protected virtual V CreateViewModelInstance<V>() where V : ViewModel
+        {
+            return System.Activator.CreateInstance<V>();;
         }
     }
 }
