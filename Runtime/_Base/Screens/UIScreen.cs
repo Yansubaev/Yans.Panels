@@ -128,6 +128,12 @@ namespace Yans.UI.UIScreens
 
         #endregion
 
+        public void AddScreenResultListener(IScreenResultListener listener)
+        {
+            if (listener == null || _resultListeners.Contains(listener)) return;
+            _resultListeners.Add(listener);
+        }
+
         #region protected methods
         protected virtual void OnCreated() { }
 
