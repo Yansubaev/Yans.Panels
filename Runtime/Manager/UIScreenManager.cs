@@ -43,7 +43,7 @@ namespace Yans.UI
             var prevScreen = _stack.LastOrDefault();
             _stack.Add(newScreen);
 
-            newScreen.Create(_viewModelProvider, newScreen.GetInstanceId());
+            newScreen.Create(_viewModelProvider);
             SafePauseLifecycle(prevScreen);
             SafeStartLifecycle(newScreen);
 
@@ -186,7 +186,7 @@ namespace Yans.UI
             oldScreen.PauseLifecycle();
             oldScreen.StopLifecycle();
 
-            newScreen.Create(_viewModelProvider, oldScreen.GetInstanceId());
+            newScreen.Create(_viewModelProvider, oldScreen.GetInstanceId(), oldScreen.ResultListeners);
 
             if (isLifecycleStarted)
             {

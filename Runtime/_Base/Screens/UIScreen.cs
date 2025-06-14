@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,7 +16,10 @@ namespace Yans.UI.UIScreens
         public bool IsLifecycleStarted { get; private set; }
         public bool IsLifecycleResumed { get; private set; }
         #endregion
+        internal List<IScreenResultListener> ResultListeners => _resultListeners;
         protected IViewModelProvider ViewModelProvider => _viewModelProvider;
+
+        protected List<IScreenResultListener> _resultListeners;
 
         #region private fields
 
@@ -35,27 +39,27 @@ namespace Yans.UI.UIScreens
         private string _instanceId;
         #endregion
 
-        #region public methods
-
         public string GetInstanceId()
         {
             return _instanceId;
         }
 
-        internal void Create(IViewModelProvider viewModelProvider = null, string instanceId = null)
+        #region internal methods
+
+        internal void Create(IViewModelProvider viewModelProvider, string instanceId = null, List<IScreenResultListener> resultListeners = null)
         {
 #if LOG_SCREEN_LIFECYCLE
             Debug.Log($"<color=green>[SCREEN] {name}.Create</color>", gameObject);
 #endif
             _viewModelProvider = viewModelProvider;
             _instanceId = instanceId ?? $"{GetType().Name}-{System.Guid.NewGuid()}";
+            _resultListeners = resultListeners ?? new List<IScreenResultListener>();
 
             CreateLifecycle();
         }
 
         internal void CreateLifecycle()
         {
-
             OnCreated();
         }
 
@@ -136,6 +140,15 @@ namespace Yans.UI.UIScreens
         protected virtual void OnStopped() { }
 
         protected virtual void OnClosed() { }
+
+        protected void SendResultToListeners(ScreenResult result)
+        {
+            foreach (var listener in _resultListeners)
+            {
+                listener.OnScreenResult(this, result);
+            }
+        }
+
         #endregion
     }
 }
