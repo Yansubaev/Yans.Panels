@@ -39,10 +39,26 @@ namespace Yans.UI.UIScreens
         private string _instanceId;
         #endregion
 
+        #region public methods
+
         public string GetInstanceId()
         {
             return _instanceId;
         }
+
+        public void AddScreenResultListener(IScreenResultListener listener)
+        {
+            if (listener == null || _resultListeners.Contains(listener)) return;
+            _resultListeners.Add(listener);
+        }
+
+        public void RemoveScreenResultListener(IScreenResultListener listener)
+        {
+            if (listener == null || !_resultListeners.Contains(listener)) return;
+            _resultListeners.Remove(listener);
+        }
+
+        #endregion
 
         #region internal methods
 
@@ -128,13 +144,13 @@ namespace Yans.UI.UIScreens
 
         #endregion
 
-        public void AddScreenResultListener(IScreenResultListener listener)
+        #region protected methods
+
+        protected void ClearScreenResultListeners()
         {
-            if (listener == null || _resultListeners.Contains(listener)) return;
-            _resultListeners.Add(listener);
+            _resultListeners.Clear();
         }
 
-        #region protected methods
         protected virtual void OnCreated() { }
 
         protected virtual void OnStarted() { }
