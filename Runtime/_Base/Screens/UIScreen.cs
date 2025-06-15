@@ -165,7 +165,7 @@ namespace Yans.UI.UIScreens
 
         protected void SendResultToListeners(ScreenResult result)
         {
-            foreach (var listener in _resultListeners)
+            foreach (var listener in new List<IScreenResultListener>(_resultListeners))
             {
                 listener.OnScreenResult(this, result);
             }
