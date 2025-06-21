@@ -6,8 +6,8 @@ namespace Yans.UI
     public interface IScreenManager
     {
         UniTask<T> OpenScreen<T>() where T : UIScreen;
-        UniTask CloseScreen(UIScreen screen);
-        UniTask CloseTop();
+        void CloseScreen(UIScreen screen);
+        void CloseTop();
         void CloseAll();
         T GetScreen<T>() where T : UIScreen;
         bool TryGetScreen<T>(out T screen) where T : UIScreen;

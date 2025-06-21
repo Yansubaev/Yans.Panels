@@ -42,22 +42,14 @@ namespace Yans.UI
             var newScreen = await _screenInstantiator.InstantiateScreen<T>(_uiRoot.ScreenRoot, _currentScreenOrientation);
             var prevScreen = _stack.LastOrDefault();
             _stack.Add(newScreen);
-
             newScreen.Create(_viewModelProvider);
-            SafePauseLifecycle(prevScreen);
-            SafeStartLifecycle(newScreen);
 
-            await HandlePanelsTransition(prevScreen, newScreen);
-
-            if (newScreen != null && !newScreen.GetType().IsSubclassOf(typeof(UIPopup)))
-                SafeStopLifecycle(prevScreen);
-
-            SafeResumeLifecycle(newScreen);
-
+            ContinueOpenScreen(newScreen, prevScreen).Forget();
+            
             return newScreen;
         }
 
-        public async UniTask CloseScreen(UIScreen screen)
+        public void CloseScreen(UIScreen screen)
         {
             if (!_stack.Contains(screen))
             {
@@ -67,26 +59,19 @@ namespace Yans.UI
 
             var isTopScreen = _stack.Last() == screen;
             _stack.Remove(screen);
-
-            SafePauseLifecycle(screen);
-
-            if (isTopScreen)
-            {
-                var newTopScreen = _stack.LastOrDefault();
-                SafeStartLifecycle(newTopScreen);
-
-                await HandlePanelsTransition(screen, newTopScreen);
-
-                SafeResumeLifecycle(newTopScreen);
-            }
-
-            SafeStopLifecycle(screen);
-            CleanupScreen(screen);
+            ContinueCloseScreen(screen, isTopScreen).Forget();
         }
 
-        public UniTask CloseTop()
+        public void CloseTop()
         {
-            return _stack.Count == 0 ? UniTask.CompletedTask : CloseScreen(_stack.Last());
+            if (_stack.Count == 0)
+            {
+                Debug.LogWarning("No screens to close.");
+                return;
+            } else {
+                var topScreen = _stack.Last();
+                CloseScreen(topScreen);
+            }
         }
 
         public void OnOrientationChanged(ScreenOrientation newOrientation)
@@ -130,6 +115,38 @@ namespace Yans.UI
         #endregion
 
         #region private methods
+        private async UniTask<UIScreen> ContinueOpenScreen(UIScreen newScreen, UIScreen prevScreen)
+        {
+            SafePauseLifecycle(prevScreen);
+            SafeStartLifecycle(newScreen);
+
+            await HandlePanelsTransition(prevScreen, newScreen);
+
+            if (newScreen != null && !newScreen.GetType().IsSubclassOf(typeof(UIPopup)))
+                SafeStopLifecycle(prevScreen);
+
+            SafeResumeLifecycle(newScreen);
+
+            return newScreen;
+        }
+
+        private async UniTask ContinueCloseScreen(UIScreen screen, bool isTopScreen)
+        {
+            SafePauseLifecycle(screen);
+
+            if (isTopScreen)
+            {
+                var newTopScreen = _stack.LastOrDefault();
+                SafeStartLifecycle(newTopScreen);
+
+                await HandlePanelsTransition(screen, newTopScreen);
+
+                SafeResumeLifecycle(newTopScreen);
+            }
+
+            SafeStopLifecycle(screen);
+            CleanupScreen(screen);
+        }
 
         private void CleanupScreen(UIScreen screen)
         {

@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Yans.ViewModels;
+using Cysharp.Threading.Tasks;
 
 namespace Yans.UI.UIScreens
 {
@@ -37,6 +38,12 @@ namespace Yans.UI.UIScreens
 
         private IViewModelProvider _viewModelProvider;
         private string _instanceId;
+
+        private UniTaskCompletionSource<bool> _startCompletionSource;
+        private UniTaskCompletionSource<bool> _resumeCompletionSource;
+        private UniTaskCompletionSource<bool> _pauseCompletionSource;
+        private UniTaskCompletionSource<bool> _stopCompletionSource;
+        private UniTaskCompletionSource<bool> _closeCompletionSource;
         #endregion
 
         #region public methods
@@ -71,6 +78,13 @@ namespace Yans.UI.UIScreens
             _instanceId = instanceId ?? $"{GetType().Name}-{System.Guid.NewGuid()}";
             _resultListeners = resultListeners ?? new List<IScreenResultListener>();
 
+            // Initialize completion sources for awaiters
+            _startCompletionSource = new UniTaskCompletionSource<bool>();
+            _resumeCompletionSource = new UniTaskCompletionSource<bool>();
+            _pauseCompletionSource = new UniTaskCompletionSource<bool>();
+            _stopCompletionSource = new UniTaskCompletionSource<bool>();
+            _closeCompletionSource = new UniTaskCompletionSource<bool>();
+
             CreateLifecycle();
         }
 
@@ -90,6 +104,7 @@ namespace Yans.UI.UIScreens
 
             OnStarted();
             IsLifecycleStarted = true;
+            _startCompletionSource.TrySetResult(true);
         }
 
         internal void ResumeLifecycle()
@@ -104,6 +119,7 @@ namespace Yans.UI.UIScreens
 
             OnResumed();
             IsLifecycleResumed = true;
+            _resumeCompletionSource.TrySetResult(true);
         }
 
         internal void PauseLifecycle()
@@ -118,6 +134,7 @@ namespace Yans.UI.UIScreens
 
             OnPaused();
             IsLifecycleResumed = false;
+            _pauseCompletionSource.TrySetResult(true);
         }
 
         internal void StopLifecycle()
@@ -131,6 +148,7 @@ namespace Yans.UI.UIScreens
 
             OnStopped();
             IsLifecycleStarted = false;
+            _stopCompletionSource.TrySetResult(true);
         }
 
         internal void Close()
@@ -140,6 +158,7 @@ namespace Yans.UI.UIScreens
 #endif
 
             OnClosed();
+            _closeCompletionSource.TrySetResult(true);
         }
 
         #endregion
@@ -169,6 +188,40 @@ namespace Yans.UI.UIScreens
             {
                 listener.OnScreenResult(this, result);
             }
+        }
+
+        #endregion
+
+        #region awaitable methods
+
+        public UniTask<bool> WaitForStartAsync()
+        {
+            if (IsLifecycleStarted) return UniTask.FromResult(true);
+            return _startCompletionSource.Task;
+        }
+
+        public UniTask<bool> WaitForResumeAsync()
+        {
+            if (IsLifecycleResumed) return UniTask.FromResult(true);
+            return _resumeCompletionSource.Task;
+        }
+
+        public UniTask<bool> WaitForPauseAsync()
+        {
+            if (!IsLifecycleResumed) return UniTask.FromResult(true);
+            return _pauseCompletionSource.Task;
+        }
+
+        public UniTask<bool> WaitForStopAsync()
+        {
+            if (!IsLifecycleStarted) return UniTask.FromResult(true);
+            return _stopCompletionSource.Task;
+        }
+
+        public UniTask<bool> WaitForCloseAsync()
+        {
+            // Await close completion
+            return _closeCompletionSource.Task;
         }
 
         #endregion
